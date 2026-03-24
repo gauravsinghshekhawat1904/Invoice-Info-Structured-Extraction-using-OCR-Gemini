@@ -7,33 +7,47 @@ import io
 import pytesseract
 from dotenv import load_dotenv
 import os
-
+import re 
 
 load_dotenv()
-google_api_key = os.getenv("GOOGL_API_KEY")
 
+# Your API Key
+google_api_key = "AIzaSyCW3e8P2qBFtqVaNsiRnP8PBGOdggIXtKw"
 
+# 1. FIXED: Added the -preview suffix for 2026 model access
 llm = ChatGoogleGenerativeAI(
     google_api_key=google_api_key,
-    temperature=0.3,
-    model="gemini-1.5-flash-latest"
+    model="gemini-3-flash-preview", 
+    temperature=0, 
+    max_output_tokens=8192,
+    model_kwargs={"response_mime_type": "application/json"}
 )
 
+# 2. FIXED: Robust function to handle both string and list-based responses
+def clean_json_string(ai_response_content):
+    # If the AI sends back a list (new 2026 format), join the text parts
+    if isinstance(ai_response_content, list):
+        full_text = "".join([part.get('text', '') for part in ai_response_content if isinstance(part, dict)])
+    else:
+        full_text = str(ai_response_content)
+    
+    # This finds the actual JSON part { ... } and ignores any other talk or "extras"
+    match = re.search(r'\{.*\}', full_text, re.DOTALL)
+    if match:
+        return match.group(0)
+    return full_text
 
 def extract_text_from_file(uploaded_file):
     try:
         image = Image.open(uploaded_file)
-
-
         gray_image = image.convert("L")
-
         extracted_text = pytesseract.image_to_string(gray_image).strip()
         return extracted_text
     except Exception as e:
         st.error(f"Error extracting text: {str(e)}")
         return None
 
-
+# --- UI Setup ---
 st.set_page_config(page_title="Invoice Information Extractor", layout="wide")
 st.title("📑 Invoice Information Extractor")
 
@@ -43,37 +57,47 @@ if uploaded_file is not None:
     st.image(uploaded_file, caption="Uploaded Invoice", use_column_width=True)
 
     if st.button("Extract Information"):
-        with st.spinner("Extracting text from image..."):
+        with st.spinner("Step 1: Reading text from image..."):
             extracted_text = extract_text_from_file(uploaded_file)
 
         if extracted_text:
-            st.subheader("🔎 Extracted Text:")
+            st.subheader("🔎 OCR Extracted Text:")
             st.text(extracted_text)
 
-            st.subheader("🤖 Processing with Gemini...")
-            message = f"""
-            system: You are an invoice information extractor who extracts information from text and converts it into a JSON format with proper structure and key-value pairs.
-            user: {extracted_text}
+            st.subheader("🤖 Step 2: Processing with Gemini AI...")
+            
+            prompt = f"""
+            Extract the following from the text into a JSON object:
+            - Invoice Number
+            - Date
+            - Total Amount
+            - Vendor Name
+            - Items list (description and price)
+
+            Text: {extracted_text}
             """
 
             try:
-                response = llm.invoke(message)
-                result = str(response.content)
-                result = result.replace("```json", "").replace("```", "").strip()
+                response = llm.invoke(prompt)
+                
+                # 3. FIXED: Get the cleaned JSON string correctly
+                clean_json = clean_json_string(response.content)
+                
+                json_data = json.loads(clean_json)
 
-                json_data = json.loads(result)
-
-                st.subheader("📋 Extracted Invoice Details (JSON):")
+                st.success("✅ Success! Data Extracted.")
+                st.subheader("📋 Final Results:")
                 st.json(json_data)
 
                 st.download_button(
-                    label="💾 Download JSON",
+                    label="💾 Download JSON Result",
                     data=json.dumps(json_data, indent=4),
                     file_name="invoice_data.json",
                     mime="application/json"
                 )
 
             except json.JSONDecodeError:
-                st.error("Invalid JSON response from AI. Please check the model output.")
+                st.error("AI output was not in a valid JSON format. Try again.")
             except Exception as e:
-                st.error(f"Error processing invoice: {str(e)}")
+                # This catches the 404 or other API errors
+                st.error(f"Error in Step 2: {str(e)}")

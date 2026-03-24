@@ -1,0 +1,16 @@
+{
+    "Invoice Number": "GST-3425-26",
+    "Date": "23-Jul-2025",
+    "Total Amount": "4,490.00",
+    "Vendor Name": "GUJARAT FREIGHT TOOLS",
+    "Items list": [
+        {
+            "description": "Bosch All-in-One Metal Hand Tool Kit",
+            "price": "2,535.00"
+        },
+        {
+            "description": "Taparia Universal Tool Kit",
+            "price": "1,270.00"
+        }
+    ]
+}

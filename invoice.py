@@ -10,8 +10,8 @@ import os
 
 load_dotenv()
 
-google_api_key = os.getenv("GOOGL_API_KEY")
-
+##google_api_key = os.getenv("GOOGL_API_KEY")
+google_api_key = "AIzaSyCW3e8P2qBFtqVaNsiRnP8PBGOdggIXtKw"
 
 
 
@@ -56,14 +56,14 @@ def details():
             return jsonify({"error": "No text could be extracted from the image"}), 400
 
         message = f"""
-        system: You are an invoice information extractor who extracts information from text and converts it into a JSON format with proper structure and key-value pairs.
+        system: You are an invoice information extractor who extracts information from text and converts it into a JSON format with proper structure and key-value pairs. 
         user: {extracted_text}
         """
 
         llm = ChatGoogleGenerativeAI(
             google_api_key=google_api_key,
-            temperature=0.3,
-            model="gemini-1.5-flash-latest"
+            temperature=0.3, top_p=0.95, top_k=40, max_output_tokens=8192, response_mime_type="application/json",
+            model="gemini-3-flash-preview"
         )
 
         response = llm.invoke(message)

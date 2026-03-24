@@ -1,0 +1,91 @@
+import streamlit as st
+from PIL import Image
+import numpy as np
+from langchain_google_genai import ChatGoogleGenerativeAI
+import json
+import io
+import pytesseract
+from dotenv import load_dotenv
+import os
+import re # Added for better text cleaning
+
+load_dotenv()
+
+# Your API Key
+google_api_key = "AIzaSyCW3e8P2qBFtqVaNsiRnP8PBGOdggIXtKw"
+
+# 1. FIXED: Proper way to set JSON mode in LangChain
+llm = ChatGoogleGenerativeAI(
+    google_api_key=google_api_key,
+    model="gemini-3-flash-preview",
+    temperature=0, # Set to 0 for maximum consistency
+    model_kwargs={"response_mime_type": "application/json"} 
+)
+
+def extract_text_from_file(uploaded_file):
+    try:
+        image = Image.open(uploaded_file)
+        gray_image = image.convert("L")
+        extracted_text = pytesseract.image_to_string(gray_image).strip()
+        return extracted_text
+    except Exception as e:
+        st.error(f"Error extracting text: {str(e)}")
+        return None
+
+# 2. NEW: Safety function to extract JSON from a messy string
+def clean_json_string(text):
+    # This finds the FIRST { and LAST } and ignores everything else
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        return match.group(0)
+    return text
+
+st.set_page_config(page_title="Invoice Information Extractor", layout="wide")
+st.title("📑 Invoice Information Extractor")
+
+uploaded_file = st.file_uploader("Upload an Invoice Image", type=["png", "jpg", "jpeg"])
+
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="Uploaded Invoice", use_column_width=True)
+
+    if st.button("Extract Information"):
+        with st.spinner("Extracting text from image..."):
+            extracted_text = extract_text_from_file(uploaded_file)
+
+        if extracted_text:
+            st.subheader("🔎 Extracted Text:")
+            st.text(extracted_text)
+
+            st.subheader("🤖 Processing with Gemini...")
+            
+            # 3. FIXED: Stronger prompt instruction
+            message = f"""
+            Extract all invoice details from the text below. 
+            Return the data as a SINGLE JSON OBJECT. 
+            Keys should include: invoice_number, date, vendor_name, total_amount, currency, and items_list.
+            
+            TEXT TO PROCESS:
+            {extracted_text}
+            """
+
+            try:
+                response = llm.invoke(message)
+                
+                # 4. FIXED: Using the cleaner function
+                result = clean_json_string(response.content)
+                json_data = json.loads(result)
+
+                st.subheader("📋 Extracted Invoice Details (JSON):")
+                st.json(json_data)
+
+                st.download_button(
+                    label="💾 Download JSON",
+                    data=json.dumps(json_data, indent=4),
+                    file_name="invoice_data.json",
+                    mime="application/json"
+                )
+
+            except json.JSONDecodeError as e:
+                st.error(f"Invalid JSON response. Raw output: {response.content}")
+            except Exception as e:
+                st.error(f"Error processing invoice: {str(e)}")
