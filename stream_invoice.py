@@ -13,7 +13,15 @@ import google.generativeai as genai
 load_dotenv()
 
 # Your API Key
-api_key = st.secrets["GOOGLE_API_KEY"]
+
+
+# Instead of typing the "AIza..." key here, we pull it from Streamlit's Secrets
+if "GOOGLE_API_KEY" in st.secrets:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+else:
+    st.error("API Key not found! Please add it to Streamlit Secrets.")
+    st.stop()
+
 genai.configure(api_key=api_key)
 
 # 1. FIXED: Added the -preview suffix for 2026 model access
