@@ -76,4 +76,3 @@ pillow
 python-dotenv
 langchain-google-genai
 pytesseract
-pdf2image
