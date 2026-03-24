@@ -8,11 +8,13 @@ import pytesseract
 from dotenv import load_dotenv
 import os
 import re 
+import google.generativeai as genai
 
 load_dotenv()
 
 # Your API Key
-google_api_key = "AIzaSyCW3e8P2qBFtqVaNsiRnP8PBGOdggIXtKw"
+api_key = st.secrets["GOOGLE_API_KEY"]
+genai.configure(api_key=api_key)
 
 # 1. FIXED: Added the -preview suffix for 2026 model access
 llm = ChatGoogleGenerativeAI(
