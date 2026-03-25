@@ -16,18 +16,18 @@ load_dotenv()
 
 
 # Instead of typing the "AIza..." key here, we pull it from Streamlit's Secrets
-if "GOOGLE_API_KEY" in st.secrets:
-    google_api_key = st.secrets["GOOGLE_API_KEY"]
-else:
-    st.error("API Key not found in Secrets!")
-    st.stop()
+#if "GOOGLE_API_KEY" in st.secrets:
+ #   google_api_key = st.secrets["GOOGLE_API_KEY"]
+#else:
+#    st.error("API Key not found in Secrets!")
+#    st.stop()
 
 # 2. Configure the library
-genai.configure(api_key=google_api_key)
+#genai.configure(api_key=google_api_key)
 
 # 1. FIXED: Added the -preview suffix for 2026 model access
 llm = ChatGoogleGenerativeAI(
-    google_api_key=google_api_key,
+   # google_api_key=google_api_key,
     model="gemini-3-flash-preview", 
     temperature=0, 
     max_output_tokens=8192,
@@ -75,40 +75,40 @@ if uploaded_file is not None:
             st.subheader("🔎 OCR Extracted Text:")
             st.text(extracted_text)
 
-            st.subheader("🤖 Step 2: Processing with Gemini AI...")
+            #st.subheader("🤖 Step 2: Processing with Gemini AI...")
             
-            prompt = f"""
-            Extract the following from the text into a JSON object:
-            - Invoice Number
-            - Date
-            - Total Amount
-            - Vendor Name
-            - Items list (description and price)
+            #*prompt = f"""
+            #Extract the following from the text into a JSON object:
+           # - Invoice Number
+           # - Date
+           # - Total Amount
+           # - Vendor Name
+           # - Items list (description and price)
 
-            Text: {extracted_text}
-            """
+           # Text: {extracted_text}
+           # """
 
-            try:
+           try:
                 response = llm.invoke(prompt)
                 
                 # 3. FIXED: Get the cleaned JSON string correctly
-                clean_json = clean_json_string(response.content)
+               # clean_json = clean_json_string(response.content)
                 
-                json_data = json.loads(clean_json)
+               # json_data = json.loads(clean_json)
 
                 st.success("✅ Success! Data Extracted.")
                 st.subheader("📋 Final Results:")
-                st.json(json_data)
+               # st.json(json_data)
 
-                st.download_button(
-                    label="💾 Download JSON Result",
-                    data=json.dumps(json_data, indent=4),
-                    file_name="invoice_data.json",
-                    mime="application/json"
-                )
+              #  st.download_button(
+               #     label="💾 Download JSON Result",
+               #     data=json.dumps(json_data, indent=4),
+               #     file_name="invoice_data.json",
+               #     mime="application/json"
+             #   )
 
-            except json.JSONDecodeError:
-                st.error("AI output was not in a valid JSON format. Try again.")
+        #    except json.JSONDecodeError:
+           #     st.error("AI output was not in a valid JSON format. Try again.")
             except Exception as e:
                 # This catches the 404 or other API errors
                 st.error(f"Error in Step 2: {str(e)}")
