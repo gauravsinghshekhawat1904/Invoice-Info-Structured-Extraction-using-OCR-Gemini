@@ -88,16 +88,16 @@ if uploaded_file is not None:
            # Text: {extracted_text}
            # """
 
-           try:
-               response = llm.invoke(prompt)
+          # try:
+              ### response = llm.invoke(prompt)
                 
                 # 3. FIXED: Get the cleaned JSON string correctly
                # clean_json = clean_json_string(response.content)
                 
                # json_data = json.loads(clean_json)
 
-                st.success("✅ Success! Data Extracted.")
-                st.subheader("📋 Final Results:")
+               ## st.success("✅ Success! Data Extracted.")
+              #  st.subheader("📋 Final Results:")
                # st.json(json_data)
 
               #  st.download_button(
@@ -109,6 +109,6 @@ if uploaded_file is not None:
 
         #    except json.JSONDecodeError:
            #     st.error("AI output was not in a valid JSON format. Try again.")
-            except Exception as e:
+           # except Exception as e:
                 # This catches the 404 or other API errors
-                st.error(f"Error in Step 2: {str(e)}")
+             #   st.error(f"Error in Step 2: {str(e)}")
