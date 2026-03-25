@@ -26,13 +26,13 @@ load_dotenv()
 #genai.configure(api_key=google_api_key)
 
 # 1. FIXED: Added the -preview suffix for 2026 model access
-llm = ChatGoogleGenerativeAI(
+#llm = ChatGoogleGenerativeAI(
    # google_api_key=google_api_key,
-    model="gemini-3-flash-preview", 
-    temperature=0, 
-    max_output_tokens=8192,
-    model_kwargs={"response_mime_type": "application/json"}
-)
+    #model="gemini-3-flash-preview", 
+   # temperature=0, 
+    #max_output_tokens=8192,
+    #model_kwargs={"response_mime_type": "application/json"}
+#)
 
 # 2. FIXED: Robust function to handle both string and list-based responses
 def clean_json_string(ai_response_content):
