@@ -89,7 +89,7 @@ if uploaded_file is not None:
            # """
 
            try:
-                response = llm.invoke(prompt)
+               response = llm.invoke(prompt)
                 
                 # 3. FIXED: Get the cleaned JSON string correctly
                # clean_json = clean_json_string(response.content)
