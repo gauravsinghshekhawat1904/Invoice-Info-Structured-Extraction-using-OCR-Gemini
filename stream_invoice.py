@@ -59,13 +59,13 @@ def extract_text_from_file(uploaded_file):
         return None
 
 # --- UI Setup ---
-st.set_page_config(page_title="Invoice Information Extractor", layout="wide")
-st.title("📑 Invoice Information Extractor")
+st.set_page_config(page_title="Image to Text Converter", layout="wide")
+st.title("📑 Image to Text Converter")
 
-uploaded_file = st.file_uploader("Upload an Invoice Image", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("Upload an Image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Invoice", use_column_width=True)
+    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
 
     if st.button("Extract Information"):
         with st.spinner("Step 1: Reading text from image..."):
